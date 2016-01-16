@@ -28,10 +28,11 @@ function get_static_map( $object ) {
   return "https://maps.googleapis.com/maps/api/staticmap?center=" . $object["acf"]["location"]["lat"] . "," . $object["acf"]["location"]["lng"] . "&size=800x800&zoom=14&markers=color:red|" . $object["acf"]["location"]["lat"] . "," . $object["acf"]["location"]["lng"];
 }
 
+
 // https://maps.googleapis.com/maps/api/staticmap?center=40.7566464,-73.9895927&size=800x800&zoom=14&markers=color:red|40.7566464,-73.9895927
 
   /**
-   * Register a book post type, with REST API support
+   * Register a ToDo List post type, with REST API support
    *
    * Based on example at: http://codex.wordpress.org/Function_Reference/register_post_type
    */
@@ -78,45 +79,94 @@ function get_static_map( $object ) {
 
 
 
-### Registering A Custom Taxonomy With REST API Support
-### Registering a custom taxonomy, with REST API support is very similar to registering a custom post type, with REST API support. In the arguments passed to `register_taxonomy` you must pass `show_in_rest` and set it to true. You may optionally pass `rest_base` to change the base url for the taxonomy's routes.
-### The default controller for taxonomies is `WP_REST_Terms_Controller`. You may modify this with the `rest_controller_class` if you choose to use a custom controller.
-### Here is an example of how to register a custom taxonomy, with REST API support:
+// Register an attendee post type, with REST API support
+// Based on example at: https://codex.wordpress.org/Function_Reference/register_taxonomy
 
-  /**
-   * Register a genre post type, with REST API support
-   *
-   * Based on example at: https://codex.wordpress.org/Function_Reference/register_taxonomy
-   */
-  add_action( 'init', 'add_attendee_taxonomy', 30 );
-  function add_attendee_taxonomy() {
+add_action( 'init', 'add_attendee_taxonomy', 30 );
+function add_attendee_taxonomy() {
 
-    $labels = array(
-        'name'              => _x( 'Attendees', 'taxonomy general name' ),
-        'singular_name'     => _x( 'Attendee', 'taxonomy singular name' ),
-        'search_items'      => __( 'Search Attendees' ),
-        'all_items'         => __( 'All Attendees' ),
-        'parent_item'       => __( 'Parent Attendee' ),
-        'parent_item_colon' => __( 'Parent Attendee:' ),
-        'edit_item'         => __( 'Edit Attendee' ),
-        'update_item'       => __( 'Update Attendee' ),
-        'add_new_item'      => __( 'Add New Attendee' ),
-        'new_item_name'     => __( 'New Attendee Name' ),
-        'menu_name'         => __( 'Attendee' ),
+  $labels = array(
+      'name'              => _x( 'Attendees', 'taxonomy general name' ),
+      'singular_name'     => _x( 'Attendee', 'taxonomy singular name' ),
+      'search_items'      => __( 'Search Attendees' ),
+      'all_items'         => __( 'All Attendees' ),
+      'parent_item'       => __( 'Parent Attendee' ),
+      'parent_item_colon' => __( 'Parent Attendee:' ),
+      'edit_item'         => __( 'Edit Attendee' ),
+      'update_item'       => __( 'Update Attendee' ),
+      'add_new_item'      => __( 'Add New Attendee' ),
+      'new_item_name'     => __( 'New Attendee Name' ),
+      'menu_name'         => __( 'Attendee' ),
+  );
+
+  $args = array(
+      'hierarchical'      => true,
+      'labels'            => $labels,
+      'show_ui'           => true,
+      'show_admin_column' => true,
+      'query_var'         => true,
+      'rewrite'           => array( 'slug' => 'attendees' ),
+      'show_in_rest'       => true,
+      'rest_base'          => 'attendees',
+      'rest_controller_class' => 'WP_REST_Terms_Controller',
+  );
+
+  register_taxonomy( 'attendees', 'post', $args );
+
+}
+
+
+// Add a custom hook to accomodate the todo list post type better than standard ACF
+// Normal ACF to WP API Plugin doesn't support updates. So we can make a custom get and set function for the cleanest possible implementation of our lists.
+
+add_action( 'rest_api_init', 'add_todo_list_field', 30 ); // Note that this has to be low priority in order to have the ACF information available to get_static_map();
+function add_todo_list_field() {
+    register_rest_field( 'todo-list',
+        'tasks',
+        array(
+            'get_callback'    => 'get_todo_list',
+            'update_callback' => 'update_todo_list',
+            'schema'          => null,
+        )
     );
+}
 
-    $args = array(
-        'hierarchical'      => true,
-        'labels'            => $labels,
-        'show_ui'           => true,
-        'show_admin_column' => true,
-        'query_var'         => true,
-        'rewrite'           => array( 'slug' => 'attendees' ),
-        'show_in_rest'       => true,
-        'rest_base'          => 'attendees',
-        'rest_controller_class' => 'WP_REST_Terms_Controller',
-    );
+function get_todo_list( $object ) {
+  
+  $tasks = get_field("tasks", $object['id']);
 
-    register_taxonomy( 'attendees', 'post', $args );
+  // Format IDs as numbers so our client doesn’t have to
+  // foreach( $tasks as &$task ) {
+  //   $task["task_id"] = (int) $task["id"];
+  // }
 
-  }
+  return $tasks;
+
+}
+
+function update_todo_list( $value, $object ) {
+
+// $new_values = array(
+//   array(
+//     "task_id" => 5,
+//     "task_name" => json_decode(urldecode($value), true),
+//     "task_complete" => false,
+//   ),
+// );
+// var_dump($object);
+  $new_values = json_decode(urldecode($value), true);
+
+  update_field("field_569aaee7a7b28", $new_values, $object->ID); // Annoying inconsistency – $object here is the WP post, not the REST object.
+
+  // return get_field("tasks", $object['id']);
+}
+
+// $fake_data = array(
+//   array(
+//     "task_id" => 99,
+//     "task_name" => "Test Task",
+//     "task_complete" => false
+//   )
+// );
+
+// update_field("field_569aaee7a7b28", $fake_data, 28);
