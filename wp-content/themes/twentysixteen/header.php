@@ -1,22 +1,4 @@
 <?php
-print_r(json_decode('[
-      {
-        "task_id": "1",
-        "task_name": "Test Task",
-        "task_complete": false
-      }
-    ]', true)); 
-// $values = get_field("field_569aaee7a7b28", 29);
-// $new_values = array(
-// 	array(
-// 		"task_id" => 5,
-// 		"task_name" => "Test Name",
-// 		"task_complete" => true,
-// 	),
-// );
-// print_r($values);
-// print_r($new_values);
-// update_field("field_569aaee7a7b28", $new_values, 29);
 /**
  * The template for displaying the header
  *

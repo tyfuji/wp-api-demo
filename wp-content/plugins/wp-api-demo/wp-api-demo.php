@@ -135,38 +135,14 @@ function get_todo_list( $object ) {
   
   $tasks = get_field("tasks", $object['id']);
 
-  // Format IDs as numbers so our client doesn’t have to
-  // foreach( $tasks as &$task ) {
-  //   $task["task_id"] = (int) $task["id"];
-  // }
-
   return $tasks;
 
 }
 
 function update_todo_list( $value, $object ) {
 
-// $new_values = array(
-//   array(
-//     "task_id" => 5,
-//     "task_name" => json_decode(urldecode($value), true),
-//     "task_complete" => false,
-//   ),
-// );
-// var_dump($object);
   $new_values = json_decode(urldecode($value), true);
 
   update_field("field_569aaee7a7b28", $new_values, $object->ID); // Annoying inconsistency – $object here is the WP post, not the REST object.
 
-  // return get_field("tasks", $object['id']);
 }
-
-// $fake_data = array(
-//   array(
-//     "task_id" => 99,
-//     "task_name" => "Test Task",
-//     "task_complete" => false
-//   )
-// );
-
-// update_field("field_569aaee7a7b28", $fake_data, 28);
