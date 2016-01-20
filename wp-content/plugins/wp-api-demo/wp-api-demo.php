@@ -8,7 +8,6 @@
  */
 
 
-
 // Add a custom field to the returned output
 // Processes the map field on posts and conveniently creates a static map route from it – could watermark, etc.
 
@@ -29,52 +28,48 @@ function get_static_map( $object ) {
 }
 
 
-// https://maps.googleapis.com/maps/api/staticmap?center=40.7566464,-73.9895927&size=800x800&zoom=14&markers=color:red|40.7566464,-73.9895927
+// Register a ToDo List post type, with REST API support
+// Based on example at: http://codex.wordpress.org/Function_Reference/register_post_type
 
-  /**
-   * Register a ToDo List post type, with REST API support
-   *
-   * Based on example at: http://codex.wordpress.org/Function_Reference/register_post_type
-   */
-  add_action( 'init', 'add_todo_list_cpt' );
-  function add_todo_list_cpt() {
-    $labels = array(
-        'name'               => _x( 'ToDo Lists', 'post type general name', 'your-plugin-textdomain' ),
-        'singular_name'      => _x( 'ToDo List', 'post type singular name', 'your-plugin-textdomain' ),
-        'menu_name'          => _x( 'ToDo Lists', 'admin menu', 'your-plugin-textdomain' ),
-        'name_admin_bar'     => _x( 'ToDo List', 'add new on admin bar', 'your-plugin-textdomain' ),
-        'add_new'            => _x( 'Add New', 'book', 'your-plugin-textdomain' ),
-        'add_new_item'       => __( 'Add New ToDo List', 'your-plugin-textdomain' ),
-        'new_item'           => __( 'New ToDo List', 'your-plugin-textdomain' ),
-        'edit_item'          => __( 'Edit ToDo List', 'your-plugin-textdomain' ),
-        'view_item'          => __( 'View ToDo List', 'your-plugin-textdomain' ),
-        'all_items'          => __( 'All ToDo Lists', 'your-plugin-textdomain' ),
-        'search_items'       => __( 'Search ToDo Lists', 'your-plugin-textdomain' ),
-        'parent_item_colon'  => __( 'Parent ToDo Lists:', 'your-plugin-textdomain' ),
-        'not_found'          => __( 'No todo lists found.', 'your-plugin-textdomain' ),
-        'not_found_in_trash' => __( 'No todo lists found in Trash.', 'your-plugin-textdomain' )
-    );
+add_action( 'init', 'add_todo_list_cpt' );
+function add_todo_list_cpt() {
+  $labels = array(
+      'name'               => _x( 'ToDo Lists', 'post type general name', 'your-plugin-textdomain' ),
+      'singular_name'      => _x( 'ToDo List', 'post type singular name', 'your-plugin-textdomain' ),
+      'menu_name'          => _x( 'ToDo Lists', 'admin menu', 'your-plugin-textdomain' ),
+      'name_admin_bar'     => _x( 'ToDo List', 'add new on admin bar', 'your-plugin-textdomain' ),
+      'add_new'            => _x( 'Add New', 'book', 'your-plugin-textdomain' ),
+      'add_new_item'       => __( 'Add New ToDo List', 'your-plugin-textdomain' ),
+      'new_item'           => __( 'New ToDo List', 'your-plugin-textdomain' ),
+      'edit_item'          => __( 'Edit ToDo List', 'your-plugin-textdomain' ),
+      'view_item'          => __( 'View ToDo List', 'your-plugin-textdomain' ),
+      'all_items'          => __( 'All ToDo Lists', 'your-plugin-textdomain' ),
+      'search_items'       => __( 'Search ToDo Lists', 'your-plugin-textdomain' ),
+      'parent_item_colon'  => __( 'Parent ToDo Lists:', 'your-plugin-textdomain' ),
+      'not_found'          => __( 'No todo lists found.', 'your-plugin-textdomain' ),
+      'not_found_in_trash' => __( 'No todo lists found in Trash.', 'your-plugin-textdomain' )
+  );
 
-    $args = array(
-        'labels'             => $labels,
-        'description'        => __( 'Description.', 'your-plugin-textdomain' ),
-        'public'             => true,
-        'publicly_queryable' => true,
-        'show_ui'            => true,
-        'show_in_menu'       => true,
-        'query_var'          => true,
-        'rewrite'            => array( 'slug' => 'todo-list' ),
-        'capability_type'    => 'post',
-        'has_archive'        => true,
-        'hierarchical'       => false,
-        'menu_position'      => null,
-        'show_in_rest'       => true,
-        'rest_base'          => 'todo-lists',
-        'rest_controller_class' => 'WP_REST_Posts_Controller',
-        'supports'           => array( 'title' )
-    );
+  $args = array(
+      'labels'             => $labels,
+      'description'        => __( 'Description.', 'your-plugin-textdomain' ),
+      'public'             => true,
+      'publicly_queryable' => true,
+      'show_ui'            => true,
+      'show_in_menu'       => true,
+      'query_var'          => true,
+      'rewrite'            => array( 'slug' => 'todo-list' ),
+      'capability_type'    => 'post',
+      'has_archive'        => true,
+      'hierarchical'       => false,
+      'menu_position'      => null,
+      'show_in_rest'       => true,
+      'rest_base'          => 'todo-lists',
+      'rest_controller_class' => 'WP_REST_Posts_Controller',
+      'supports'           => array( 'title' )
+  );
 
-    register_post_type( 'todo-list', $args );
+  register_post_type( 'todo-list', $args );
 }
 
 
