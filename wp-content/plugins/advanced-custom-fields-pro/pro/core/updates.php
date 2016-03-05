@@ -120,7 +120,7 @@ class acf_pro_updates {
 		// bail early if not a plugin (included in theme)
 		if( !is_plugin_active($basename) ) {
 			
-			return;
+			return $transient;
 			
 		}
 		

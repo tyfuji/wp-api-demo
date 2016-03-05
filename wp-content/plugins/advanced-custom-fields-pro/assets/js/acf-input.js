@@ -2949,32 +2949,38 @@ var acf;
 	acf.add_action('before_duplicate', function( $orig ){
 		
 		// save select values
-		$orig.find('select').each(function(){
-			
-			$(this).find(':selected').addClass('selected');
-			
-		});
+		$orig.find('select option:selected').addClass('selected');
 		
 	});
 	
 	acf.add_action('after_duplicate', function( $orig, $duplicate ){
 		
 		// restore select values
-		$orig.find('select').each(function(){
-			
-			$(this).find('.selected').removeClass('selected');
-			
-		});
+		$orig.find('select option.selected').removeClass('selected');
 		
 		
 		// set select values
 		$duplicate.find('select').each(function(){
 			
-			var $selected = $(this).find('.selected');
+			// vars
+			var val = [];
 			
-			$(this).val( $selected.attr('value') );
 			
-			$selected.removeClass('selected');
+			// loop
+			$(this).find('option.selected').each(function(){
+				
+				// append
+				val.push( $(this).val() );
+				
+				
+				// remove class
+				$(this).removeClass('selected');
+				
+		    });
+		    
+		    
+		    // set val
+			$(this).val( val );
 			
 		});
 		
@@ -4912,8 +4918,9 @@ var acf;
 			}
 			
 			
-			// trigger resize on div
+			// trigger resize on map 
 			google.maps.event.trigger(this.map, 'resize');
+			
 			
 			
 			// center map
@@ -4923,8 +4930,18 @@ var acf;
 		
 		show: function(){
 			
-			// center map when it is shown (by a tab)
-			this.refresh();
+			// vars
+			var self = this,
+				$field = this.$field;
+			
+			
+			// center map when it is shown (by a tab / collapsed row)
+			// - use delay to avoid rendering issues with browsers (ensures div is visible)
+			setTimeout(function(){
+				
+				self.set('$field', $field).refresh();
+				
+			}, 10);
 			
 		},
 		
@@ -5125,6 +5142,8 @@ var acf;
 		
 		type: 'image',
 		$el: null,
+		$input: null,
+		$img: null,
 		
 		actions: {
 			'ready':	'initialize',
@@ -5140,8 +5159,11 @@ var acf;
 		
 		focus: function(){
 			
-			// get elements
+			// vars
 			this.$el = this.$field.find('.acf-image-uploader');
+			this.$input = this.$field.find('[data-name="id"]');
+			this.$img = this.$field.find('[data-name="image"]');
+			
 			
 			// get options
 			this.o = acf.get_data( this.$el );
@@ -5203,11 +5225,7 @@ var acf;
 							
 							
 							// bail early if $next was not found
-							if( !$field ) {
-								
-								return;
-								
-							}
+							if( !$field ) return;
 							
 							
 							// bail early if next file uploader has value
@@ -5232,11 +5250,7 @@ var acf;
 							
 							
 							// bail early if no $tr (maximum rows hit)
-							if( !$tr ) {
-								
-								return false;
-								
-							}
+							if( !$tr ) return false;
 							
 							
 							// get next $field
@@ -5260,10 +5274,11 @@ var acf;
 		},
 		
 		prepare: function( attachment ) {
-		
+			
 			// vars
 			var image = {
 		    	id:		attachment.id,
+		    	alt:	attachment.attributes.alt,
 		    	url:	attachment.attributes.url
 	    	};			
 			
@@ -5283,10 +5298,10 @@ var acf;
 		
 		render: function( image ){
 			
-	    	
 			// set atts
-		 	this.$el.find('[data-name="image"]').attr( 'src', image.url );
-			this.$el.find('[data-name="id"]').val( image.id ).trigger('change');
+		 	this.$img.attr('src', image.url);
+		 	this.$img.attr('alt', image.alt);
+			this.$input.val( image.id ).trigger('change');
 			
 			
 			// set div class
@@ -5297,11 +5312,12 @@ var acf;
 		edit: function() {
 			
 			// reference
-			var self = this;
+			var self = this,
+				$field = this.$field;
 			
 			
 			// vars
-			var id = this.$el.find('[data-name="id"]').val();
+			var id = this.$input.val();
 			
 			
 			// popup
@@ -5313,7 +5329,12 @@ var acf;
 				id:			id,
 				
 				select:	function( attachment, i ) {
-				
+					
+					// focus
+					self.doFocus( $field );
+					
+					
+					// render
 			    	self.render( self.prepare(attachment) );
 					
 				}
@@ -5326,8 +5347,9 @@ var acf;
 			
 			// vars
 	    	var attachment = {
-		    	id:		'',
-		    	url:	''
+		    	id: '',
+		    	alt: '',
+		    	url: ''
 	    	};
 	    	
 	    	
@@ -5342,7 +5364,7 @@ var acf;
 		
 		change: function( e ){
 			
-			this.$el.find('[data-name="id"]').val( e.$el.val() );
+			this.$input.val( e.$el.val() );
 			
 		}
 		
@@ -7290,6 +7312,8 @@ var acf;
 			}
 			
 			
+			
+			
 			// remove the blank option as we have a clear all button!
 			if( args.allow_null ) {
 				
@@ -7437,7 +7461,7 @@ var acf;
 			
 			
 			// disbale select
-			$select.attr('disabled', 'disabled').addClass('acf-disabled acf-hidden');
+			$select.prop('disabled', true).addClass('acf-disabled acf-hidden');
 			
 		},
 		
@@ -7679,6 +7703,10 @@ var acf;
 			// show input so that select2 can correctly render visible select2 container
 			$select.siblings('input').show();
 			
+			
+			// enable select
+			$select.prop('disabled', false).removeClass('acf-disabled acf-hidden');
+			
 		}
 		
 	});
@@ -7708,7 +7736,6 @@ var acf;
 		acf.select2.destroy( $select );
 		
 	}
-	
 	
 	
 	// select
@@ -7785,7 +7812,8 @@ var acf;
 	// user
 	acf.fields.user = acf.fields.select.extend({
 		
-		type: 'user'
+		type: 'user',
+		pagination: true
 		
 	});	
 	
@@ -7894,7 +7922,7 @@ var acf;
 			// select other tab if active
 			if( $li.hasClass('active') ) {
 				
-				$group.find('a:visible:first').trigger('click');
+				$group.find('li:not(.hidden-by-conditional-logic):first a').trigger('click');
 				
 			}
 			
@@ -7993,7 +8021,7 @@ var acf;
 				// trigger click
 				if( !$group.find('li.active').exists() ) {
 					
-					$group.find('a:visible:first').trigger('click');
+					$group.find('li:not(.hidden-by-conditional-logic):first a').trigger('click');
 					
 				}
 				

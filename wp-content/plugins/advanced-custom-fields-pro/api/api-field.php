@@ -178,7 +178,7 @@ function acf_get_valid_field( $field = false ) {
 	
 	
 	// translate
-	acf_translate_keys( $field, acf_get_setting('l10n_field') );
+	$field = acf_translate_keys( $field, acf_get_setting('l10n_field') );
 	
 	
 	// field specific defaults
@@ -308,6 +308,10 @@ function acf_get_field_label( $field ) {
 		$label .= ' <span class="acf-required">*</span>';
 		
 	}
+	
+	
+	// filter for 3rd party customization
+	$label = apply_filters("acf/get_field_label", $label, $field);
 	
 	
 	// return

@@ -71,7 +71,7 @@ function acf_get_valid_field_group( $field_group = false ) {
 	
 	
 	// translate
-	acf_translate_keys( $field_group, acf_get_setting('l10n_field_group') );
+	$field_group = acf_translate_keys( $field_group, acf_get_setting('l10n_field_group') );
 		
 	
 	// filter

@@ -114,7 +114,7 @@ function add_attendee_taxonomy() {
 // Add a custom hook to accomodate the todo list post type better than standard ACF
 // Normal ACF to WP API Plugin doesn't support updates. So we can make a custom get and set function for the cleanest possible implementation of our lists.
 
-add_action( 'rest_api_init', 'add_todo_list_field', 30 ); // Note that this has to be low priority in order to have the ACF information available to get_static_map();
+add_action( 'rest_api_init', 'add_todo_list_field', 30 );
 function add_todo_list_field() {
     register_rest_field( 'todo-list',
         'tasks',

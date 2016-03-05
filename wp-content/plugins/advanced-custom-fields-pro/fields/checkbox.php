@@ -200,7 +200,7 @@ class acf_field_checkbox extends acf_field {
 		
 		// encode choices (convert from array)
 		$field['choices'] = acf_encode_choices($field['choices']);
-		$field['default_value'] = acf_encode_choices($field['default_value']);
+		$field['default_value'] = acf_encode_choices($field['default_value'], false);
 				
 		
 		// choices
@@ -272,6 +272,10 @@ class acf_field_checkbox extends acf_field {
 		// decode choices (convert to array)
 		$field['choices'] = acf_decode_choices($field['choices']);
 		$field['default_value'] = acf_decode_choices($field['default_value']);
+		
+		
+		// use only keys for default value
+		$field['default_value'] = array_keys($field['default_value']);
 		
 		
 		// return

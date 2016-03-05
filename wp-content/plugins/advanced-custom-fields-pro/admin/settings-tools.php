@@ -355,18 +355,8 @@ class acf_settings_tools {
 	
 	function generate() {
 		
-		// translate
-		if( acf_get_setting('l10n_textdomain') ) {
-			
-			// prevent default translation
-			acf_update_setting('l10n_var_export', true);
-						
-			
-			// filters
-			add_filter('acf/prepare_field_group_for_export', 	array($this, '_translate_field_group'));
-			add_filter('acf/prepare_field_for_export', 			array($this, '_translate_field'));
-		
-		}
+		// prevent default translation and fake __() within string
+		acf_update_setting('l10n_var_export', true);
 		
 		
 		// vars
@@ -385,18 +375,6 @@ class acf_settings_tools {
 		// update view
 		$this->view = 'settings-tools-export';
 		$this->data['field_groups'] = $json;
-		
-	}
-	
-	function _translate_field( $field ) {
-		
-		return acf_translate_keys($field, acf_get_setting('l10n_field'));
-		
-	}
-	
-	function _translate_field_group( $field_group ) {
-		
-		return acf_translate_keys($field_group, acf_get_setting('l10n_field_group'));
 		
 	}
 	

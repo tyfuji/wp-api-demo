@@ -17,27 +17,7 @@
 
 function acf_get_field_reference( $field_name, $post_id ) {
 	
-	// try cache
-	$found = false;
-	$cache = wp_cache_get( "field_reference/post_id={$post_id}/name={$field_name}", 'acf', false, $found );
-	
-	if( $found ) {
-		
-		return $cache;
-		
-	}
-			
-	
-	// get reference
-	$reference = acf_get_metadata( $post_id, $field_name, true );
-	
-	
-	//update cache
-	wp_cache_set( "field_reference/post_id={$post_id}/name={$field_name}", $reference, 'acf' );
-	
-	
-	// return
-	return $reference;
+	return acf_get_metadata( $post_id, $field_name, true );
 	
 }
 
@@ -680,12 +660,14 @@ function get_row_index() {
 function reset_rows( $hard_reset = false ) {
 	
 	// completely destroy?
-	if( $hard_reset )
-	{
+	if( $hard_reset ) {
+		
 		$GLOBALS['acf_field'] = array();
-	}
-	else
-	{
+	
+	
+	// reset current row	
+	} else {
+		
 		// vars
 		$depth = count( $GLOBALS['acf_field'] ) - 1;
 		
@@ -1002,11 +984,7 @@ function acf_form_head() {
 	    	
 	    	
 	    	// validate
-	    	if( empty($GLOBALS['acf_form']) ) {
-		    	
-		    	return;
-		    	
-	    	}
+	    	if( empty($GLOBALS['acf_form']) ) return;
 	    	
 	    	
 	    	// vars
@@ -1084,6 +1062,14 @@ function _validate_save_post() {
 	
 	}
 	
+	
+	// honeypot
+	if( !empty($_POST['acf']['_validate_email']) ) {
+		
+		acf_add_validation_error( '', __('Spam Detected', 'acf') );
+		
+	}
+	
 }
 
 
@@ -1100,7 +1086,7 @@ function _validate_save_post() {
 *  @return	$post_id (int)
 */
 
-add_filter('acf/pre_save_post', '_acf_pre_save_post', 0, 2);
+add_filter('acf/pre_save_post', '_acf_pre_save_post', 5, 2);
 
 function _acf_pre_save_post( $post_id, $form ) {
 	
@@ -1150,6 +1136,10 @@ function _acf_pre_save_post( $post_id, $form ) {
 		$save['post_content'] = acf_extract_var($_POST['acf'], '_post_content');
 		
 	}
+	
+	
+	// honeypot
+	if( !empty($_POST['acf']['_validate_email']) ) return;
 	
 	
 	// validate
@@ -1226,7 +1216,8 @@ function acf_form( $args = array() ) {
 		'label_placement'		=> 'top',
 		'instruction_placement'	=> 'label',
 		'field_el'				=> 'div',
-		'uploader'				=> 'wp'
+		'uploader'				=> 'wp',
+		'honeypot'				=> true
 	));
 	
 	$args['form_attributes'] = wp_parse_args( $args['form_attributes'], array(
@@ -1317,9 +1308,7 @@ function acf_form( $args = array() ) {
 		
 	} elseif( $args['post_id'] == 'new_post' ) {
 		
-		$field_groups = acf_get_field_groups(array(
-			'post_type' => $args['new_post']['post_type']
-		));
+		$field_groups = acf_get_field_groups( $args['new_post'] );
 	
 	} else {
 		
@@ -1348,6 +1337,22 @@ function acf_form( $args = array() ) {
 		
 		}
 	
+	}
+	
+	
+	// honeypot
+	if( $args['honeypot'] ) {
+		
+		$fields[] = acf_get_valid_field(array(
+			'name'		=> '_validate_email',
+			'label'		=> 'Validate Email',
+			'type'		=> 'text',
+			'value'		=> '',
+			'wrapper'	=> array(
+				'style'	=> 'display:none;'
+			)
+		));
+		
 	}
 	
 	
@@ -1404,7 +1409,7 @@ function acf_form( $args = array() ) {
 	<!-- Submit -->
 	<div class="acf-form-submit">
 	
-		<input type="submit" class="button button-primary button-large" value="<?php echo $args['submit_value']; ?>" />
+		<input type="submit" class="acf-button button button-primary button-large" value="<?php echo $args['submit_value']; ?>" />
 		<span class="acf-spinner"></span>
 		
 	</div>
@@ -1790,11 +1795,7 @@ function delete_row( $selector, $row = 1, $post_id = false ) {
 	
 	
 	// bail early if no field
-	if( !$field ) {
-		
-		return false;
-		
-	}
+	if( !$field ) return false;
 	
 	
 	// get value
@@ -1802,15 +1803,11 @@ function delete_row( $selector, $row = 1, $post_id = false ) {
 	
 	
 	// bail early if no value
-	if( empty($rows) ) {
-		
-		return false;
-		
-	}
+	if( empty($rows) ) return false;
 	
 	
 	// deincrement
-	if( $row = count($rows) ) {
+	if( $row == count($rows) ) {
 		
 		acf_update_metadata( $post_id, $field['name'], $row-1 );
 		
